@@ -1,0 +1,24 @@
+{
+    "PYCH_CORE_WORK": "config",
+    "REMOTE_ADDR": "raspberrypi.local",
+    "REMOTE_USER": "pi",
+    "REMOTE_WORK": "/home/pi/core",
+    "REMOTE_ARCH": "aarch64-unknown-linux-gnu",
+    "REMOTE_LOCAL": "/home/inception/Downloads/ll",
+    "REMOTE_SSH_KEY": "/home/inception/git/pych/ssh/id_rsa",
+    "EXTERNAL_PLUGIN_PATH": [
+        "/home/inception/git/pych_plugins"
+    ],
+    "_IS_FOLDER": [
+        "PYCH_CORE_WORK",
+        "REMOTE_WORK",
+        "REMOTE_LOCAL"
+    ],
+    "_IS_FILE": [
+        "REMOTE_SSH_KEY"
+    ],
+    "_OPT_REMOTE_ARCH": [
+        "x86_64-unknown-linux-gnu",
+        "aarch64-unknown-linux-gnu"
+    ]
+}

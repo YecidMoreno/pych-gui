@@ -1,0 +1,27 @@
+{
+    "PYCH_CORE_WORK": "/home/inception/git/pych",
+    "REMOTE_ADDR": "127.0.0.1",
+    "REMOTE_USER": "inception",
+    "REMOTE_WORK": "/home/inception/Downloads/ll0",
+    "REMOTE_ARCH": "x86_64-linux-gnu",
+    "REMOTE_LOCAL": "/home/inception/Downloads/ll",
+    "REMOTE_SSH_KEY": "/home/inception/git/pych/ssh/id_rsa",
+    "REMOTE_PYCH_BIN": "testCore",
+    "REMOTE_MODEL_PATH": "ScienceMode3.json",
+    "EXTERNAL_PLUGIN_PATH": [
+        "/home/inception/git/pych_plugins"
+    ],
+    "_IS_FOLDER": [
+        "PYCH_CORE_WORK",
+        "REMOTE_WORK",
+        "REMOTE_LOCAL"
+    ],
+    "_IS_FILE": [
+        "REMOTE_SSH_KEY",
+        "REMOTE_MODEL_PATH"
+    ],
+    "_OPT_REMOTE_ARCH": [
+        "x86_64-unknown-linux-gnu",
+        "aarch64-unknown-linux-gnu"
+    ]
+}
