@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QStyle
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, QIODevice, Qt, QThread, QProcess, QTimer
 from PySide6.QtGui import QIcon, QAction
-from PySide6.QtWidgets import QLineEdit, QFileDialog
+from PySide6.QtWidgets import QLineEdit, QFileDialog, QComboBox
 
 import json
 
@@ -13,24 +13,19 @@ import qdarktheme
 import subprocess
 import subprocess, os
 from PySide6.QtCore import QTimer
+from datetime import datetime
 import threading
+import os
 
+from utils.utils_ui import load_ui
+from path_editor import UIPathEditor
+from utils.utils_config import AppConfig
+from utils.utils_pjr import PYCH_Project
 
 CFG_PATH = os.path.join(os.path.dirname(__file__), "config/pych-gui.cfg")
-with open(CFG_PATH, "r") as f:
-    CFG = json.load(f)
 
-
-def load_ui(path: str):
-    ui_file = QFile(path)
-    if not ui_file.open(QIODevice.ReadOnly):
-        raise FileNotFoundError(f"No se puede abrir el archivo .ui: {path}")
-    loader = QUiLoader()
-    widget = loader.load(ui_file)
-    ui_file.close()
-    if widget is None:
-        raise RuntimeError(f"No se pudo cargar la interfaz desde: {path}")
-    return widget
+APP_CFG = AppConfig(path=CFG_PATH)
+APP_CFG.load()
 
 
 class UIConfigWindow:
@@ -62,10 +57,11 @@ class UIConfigWindow:
             main.setCentralWidget(widget)
             self.window = main
 
-        self.J = {}
-        self.reloadTimes = 0
-
+        self.pjr = PYCH_Project(APP_CFG.get("LAST_PROJECT_PATH", "config"), APP_CFG)
+        self.J = self.pjr.cfg
+    
         self.add_ui_controls(None)
+        self.add_event_listeners()
 
         return self.window
 
@@ -83,57 +79,25 @@ class UIConfigWindow:
             
         if self.window is None:
             self.load()
-        
-        if self.window.btn_apply is not None:
-            self.window.btn_apply.clicked.connect(self.btn_apply_clicked)
-        
-        json_file = CFG.get("LAST_CONFIG_FILE", "config/activate.json")
-        with open(json_file,'r') as f:
-            self.J = json.load(f)
 
         s = self.app.style()
-        self.ico = s.standardIcon(QStyle.StandardPixmap.SP_FileDialogNewFolder)
-
-        for i in range(1,2):
-            obj = getattr(self.window, f"ed_CONFIG_FILE", None)
-            if obj is not None:
-                obj.setText(json_file)
-                action_buscar = QAction(self.ico, "Buscar", self.window)
-                obj.addAction(action_buscar,QLineEdit.ActionPosition.TrailingPosition)
-                action_buscar.triggered.connect(lambda checked, key="#CONFIG_FILE", obj=obj: self.on_browse(key, obj, type="file", opts="JSON Files (*.json)"))
-
-                def on_text_changed(text):
-                    CFG["LAST_CONFIG_FILE"] = text
-                    with open(CFG_PATH, "w") as f:
-                        json.dump(CFG, f, indent=4)
-                    self.log(f"Configuration file changed to {text}")
-                    
-                    try:
-                        with open(text,'r') as f:
-                            self.J.clear()
-                            self.J.update(json.load(f))
-                            self.J["#CONFIG_FILE"] = text
-
-                        for key in self.J:
-                            obj = getattr(self.window, f"ed_{key}", None)
-                            if obj is not None:
-                                obj.setText(self.J[key])
-                    except Exception as e:
-                        self.log(f"Error loading configuration file: {e}")
+        self.ico = s.standardIcon(QStyle.StandardPixmap.SP_FileDialogNewFolder)          
 
 
-                obj.returnPressed.connect(lambda obj=obj: on_text_changed(obj.text()))
-                action_buscar.triggered.connect(lambda checked, obj=obj: on_text_changed(obj.text()))
-                break
+        obj = getattr(self.window, f"ed_PROJECT_PATH", None)
+        if obj is not None:
+            obj.setText(self.pjr.path)
+            obj.setReadOnly(True)
 
-        for key in self.J.get("_IS_FOLDER", []):
+
+        for key in APP_CFG.get("_IS_FOLDER", []):
             obj = getattr(self.window, f"ed_{key}", None)
             if obj is not None:
                 action_buscar = QAction(self.ico, "Buscar", self.window)
                 obj.addAction(action_buscar,QLineEdit.ActionPosition.TrailingPosition)
                 action_buscar.triggered.connect(lambda checked, key=key, obj=obj: self.on_browse(key, obj, type="folder",opts="*.*"))
 
-        for key in self.J.get("_IS_FILE", []):
+        for key in APP_CFG.get("_IS_FILE", []):
             obj = getattr(self.window, f"ed_{key}", None)
             if obj is not None:
                 action_buscar = QAction(self.ico, "Buscar", self.window)
@@ -141,12 +105,34 @@ class UIConfigWindow:
                 action_buscar.triggered.connect(lambda checked, key=key, obj=obj: self.on_browse(key, obj, type="file"))
 
 
-        for key in self.J:
-            obj = getattr(self.window, f"ed_{key}", None)
-            if obj is not None:
-                obj.setText(self.J[key])
-                obj.textChanged.connect(lambda text, k=key: self.J.update({k: text}))
+        for w_obj in self.window.findChildren(QLineEdit) + self.window.findChildren(QComboBox):
+            if w_obj.objectName().startswith("ed_"):
+                key = w_obj.objectName()[3:]
+                if key in self.pjr.cfg.keys():
+                    w_obj.setText(self.pjr.cfg[key])
+                w_obj.textChanged.connect(lambda text, k=key: self.pjr.cfg.update({k: text}))
+                continue
 
+            if w_obj.objectName().startswith("cb_"):
+                key = w_obj.objectName()[3:]
+                print(f"ComboBox: {key}")
+                w_obj.clear()
+                w_obj.addItems(self.pjr.cb_values.get(key, []))
+                if key in self.pjr.cfg.keys():
+                    w_obj.setCurrentText(self.pjr.cfg[key])
+                else:
+                    self.pjr.cfg[key] = ""
+                w_obj.currentTextChanged.connect(lambda text, k=key: self.pjr.cfg.update({k: text}))
+                
+                continue
+
+        obj = getattr(self.window, f"cb_CONFIG_FILES", None)
+        if obj is not None:
+            if self.pjr.cfg_file_name in self.pjr.cfg_files:
+                obj.setCurrentText(self.pjr.cfg_file_name)
+            obj.currentTextChanged.connect(self.update_ui_from_cfg)
+
+    def add_event_listeners(self):
         if self.window.btn_ping is not None:
             self.window.btn_ping.clicked.connect(self.btn_ping_clicked)
         
@@ -173,8 +159,71 @@ class UIConfigWindow:
         self.window.btn_stop.clicked.connect(self.btn_stop_clicked)
         self.window.btn_start.clicked.connect(self.btn_start_clicked)
 
-        pass
+        self.window.btn_apply.clicked.connect(self.btn_apply_clicked)
 
+        self.window.actionOpen_Project.triggered.connect(self.actionOpen_Project_triggered)
+        self.window.actionSave_Project.triggered.connect(self.btn_apply_clicked)
+
+        self.window.btn_EXTERNAL_PLUGINS.clicked.connect(self.btn_EXTERNAL_PLUGINS_clicked)
+
+
+    def btn_EXTERNAL_PLUGINS_clicked(self):
+        if self.window is None:
+            self.load()
+        
+        print("Botón EXTERNAL_PLUGINS presionado.")
+        
+        self.path_editor = UIPathEditor("ui_files/path_editor.ui", self.pjr.cfg.get("EXTERNAL_PLUGIN_PATH", []), "light")
+        print("Editor cargado.")
+        
+        paths,_ = self.path_editor.exec()
+        self.pjr.cfg["EXTERNAL_PLUGIN_PATH"] = paths
+
+        print("Editor mostrado.")
+        print("Paths resultantes:", paths)
+        
+        
+    def actionOpen_Project_triggered(self):
+
+        selected_dir = self.open_dialog_get_folder( os.path.dirname(APP_CFG.get("LAST_PROJECT_PATH", os.getcwd())) )
+        if selected_dir:
+            print(f"Directorio seleccionado: {selected_dir}")
+            self.pjr.clear()
+            self.pjr = PYCH_Project(selected_dir)
+            # self.pjr.cfg_file_name = self.pjr.cfg_files[0] if len(self.pjr.cfg_files)>0 else ""
+            self.J = self.pjr.cfg
+
+            key = "CONFIG_FILES"
+            obj = getattr(self.window, f"cb_{key}", None)
+            if obj is not None:
+                obj.clear()
+                obj.addItems(self.pjr.cb_values.get(key, []))
+                obj.setCurrentText(self.pjr.cfg_file_name if self.pjr.cfg_file_name in self.pjr.cfg_files else "")
+
+            self.update_ui_from_cfg()
+
+    def update_ui_from_cfg(self):
+        self.pjr.cfg_file_name = self.window.cb_CONFIG_FILES.currentText()
+        self.pjr.load()
+        self.pjr.prj_cfg.update("LAST_CONFIG_FILE", self.pjr.cfg_file_name)
+        self.pjr.prj_cfg.save()
+
+        for key, value in self.pjr.cfg.items():
+            if key == "CONFIG_FILES":
+                continue
+    
+            obj = getattr(self.window, f"ed_{key}", None)
+            if obj is not None:
+                obj.setText(value)
+                continue
+            obj = getattr(self.window, f"cb_{key}", None)
+            if obj is not None:
+                obj.clear()
+                if key in self.pjr.cfg.keys():
+                    obj.addItems(self.pjr.cb_values.get(key, []))
+                obj.setCurrentText(value)
+                continue        
+    
     def btn_start_clicked(self):
         if self.window is None:
             self.load()
@@ -185,7 +234,7 @@ class UIConfigWindow:
         program = "bash"
         arguments = [
             "-c",
-            f"source {self.get_activate_sh_path()} && cd {self.J['PYCH_CORE_WORK']} && ./scripts/remote.sh start"
+            f"source {self.pjr.get_activate_sh_path()} && cd {self.J['PYCH_CORE_WORK']} && ./scripts/remote.sh start"
         ]
 
         self.log("Remote start command started.")
@@ -220,7 +269,7 @@ class UIConfigWindow:
         program = "bash"
         arguments = [
             "-c",
-            f"source {self.get_activate_sh_path()} && cd {self.J['PYCH_CORE_WORK']} && ./scripts/remote.sh stop"
+            f"source {self.pjr.get_activate_sh_path()} && cd {self.J['PYCH_CORE_WORK']} && ./scripts/remote.sh stop"
         ]
 
         self.log("Remote stop command started.")
@@ -240,7 +289,7 @@ class UIConfigWindow:
         program = "bash"
         arguments = [
             "-c",
-            f"source {self.get_activate_sh_path()} && cd {self.J['PYCH_CORE_WORK']} && ./scripts/remote.sh copy"
+            f"source {self.pjr.get_activate_sh_path()} && cd {self.J['PYCH_CORE_WORK']} && ./scripts/remote.sh copy"
         ]
 
         print("Executing:", program, " ".join(arguments))
@@ -278,7 +327,7 @@ class UIConfigWindow:
             program = "bash"
             arguments = [
                 "-c",
-                f"source {self.get_activate_sh_path()} && cd {p} && ./build.sh {self.J.get('REMOTE_ARCH','aarch64-unknown-linux-gnu')}"
+                f"source {self.pjr.get_activate_sh_path()} && cd {p} && ./build.sh {self.J.get('REMOTE_ARCH','aarch64-unknown-linux-gnu')}"
             ]
             print("Executing:", program, " ".join(arguments))
             self.log(f"Remote build plugins started. {p}")
@@ -312,7 +361,7 @@ class UIConfigWindow:
         program = "bash"
         arguments = [
             "-c",
-            f"source {self.get_activate_sh_path()} && cd {self.J['PYCH_CORE_WORK']} && {self.J['PYCH_CORE_WORK']}/scripts/remote.sh build {self.J.get('REMOTE_ARCH','aarch64-unknown-linux-gnu')}"
+            f"source {self.pjr.get_activate_sh_path()} && cd {self.J['PYCH_CORE_WORK']} && {self.J['PYCH_CORE_WORK']}/scripts/remote.sh build {self.J.get('REMOTE_ARCH','aarch64-unknown-linux-gnu')}"
         ]
 
         print("Executing:", program, " ".join(arguments))
@@ -360,7 +409,7 @@ class UIConfigWindow:
         return True
 
     def remote_is_mounted(self):
-        cmd = ["bash" , "-c" , f"source {self.get_activate_sh_path()} &&  {self.J['PYCH_CORE_WORK']}/scripts/remote.sh ismnt"]
+        cmd = ["bash" , "-c" , f"source {self.pjr.get_activate_sh_path()} &&  {self.pjr.cfg['PYCH_CORE_WORK']}/scripts/remote.sh ismnt"]
         sp = QProcess(self.window)
         sp.start(cmd[0], cmd[1:])
         sp.waitForFinished(5000)
@@ -403,7 +452,7 @@ class UIConfigWindow:
         self.mount_process.start(program, arguments)
 
     def remote_umount(self):
-        cmd = ["bash" , "-c" , f"source {self.get_activate_sh_path()} &&  {self.J['PYCH_CORE_WORK']}/scripts/remote.sh umount"]
+        cmd = ["bash" , "-c" , f"source {self.pjr.get_activate_sh_path()} &&  {self.J['PYCH_CORE_WORK']}/scripts/remote.sh umount"]
         sp = QProcess(self.window)
         sp.start(cmd[0], cmd[1:])
         sp.waitForFinished(5000)
@@ -458,56 +507,14 @@ class UIConfigWindow:
 
         return True
 
-    def get_activate_sh_path(self):
-        return f"{CFG.get('LAST_CONFIG_FILE', 'config').split('.')[0]}.sh"
-
     def btn_apply_clicked(self):
         print("Apply clicked")
 
-        Jaux = self.J.copy()
-        for key in list(Jaux.keys()):
-            if key.startswith("#"):
-                Jaux.pop(key)
+        to_save = self.pjr.create_activate_sh()
 
-        with open(os.path.join(os.path.dirname(__file__), CFG["LAST_CONFIG_FILE"]), "w") as f:
-            json.dump(Jaux, f, indent=4)
-        print("Configuration saved.")
-
-        to_save = self.get_activate_sh_path()
-        with open(os.path.join(os.path.dirname(__file__), to_save), "w") as f:
-            f.write("#!/bin/bash\n")
-            f.write("# Generated by pych-gui\n")
-            f.write("\n")
-            f.write(f"export PYCH_ACTIVATE_SH='{self.get_activate_sh_path()}'\n")
-
-            f.write("\n")
-            for key in self.J:
-                if not key.startswith("#") and not key.startswith("_"):
-                    f.write(f"export {key}='{self.J[key]}'\n")
-
-    
-            f.write("\n")
-            f.write('export REMOTE_SSH_ARGS="-i ${REMOTE_SSH_KEY} "\n')
-            f.write('export REMOTE_SSH="${REMOTE_USER}@${REMOTE_ADDR}" \n')
-            f.write('export REMOTE_TTY="ssh $REMOTE_SSH_ARGS $REMOTE_SSH" \n')
-
-            f.write("\n")
-            f.write(f"export PROJECT_NAME='{self.J['PROJECT_PATH'].split('/')[-1]}'\n")
-
-            f.write("\n")
-            f.write('export LD_LIBRARY_PATH=lib/:${LD_LIBRARY_PATH} \n')
-
-            f.write("\n")
-            f.write("export PYCH_CORE_ACTIVATED=\"1\" \n")
-            f.write('export PYCH_NAME="core"\n')
-            f.write(r"""export PS1='($(echo $PYCH_NAME))\[\e[1;32m\]\u@\h:\[\e[1;34m\]\w\[\e[0m\]\$ ' """)
-            
-            f.write("\n\n")
-            f.write('echo "PYCH (Activated)"\n')
-
-        
-        self.log("Configuration applied.")
-        self.log("Shell script saved in " + to_save)
+        if to_save is not None:   
+            self.log("Configuration applied.")
+            self.log("Shell script saved in " + to_save)
 
 
     def on_browse(self,key, obj, type="folder", opts="All Files (*)"):
@@ -528,11 +535,15 @@ class UIConfigWindow:
                 print(f"Archivo seleccionado: {selected_file}")
         
 
-    def open_dialog_get_folder(self):
+    def open_dialog_get_folder(self,path=None):
         if self.window is None:
             self.load()
         
-        current_dir = self.window.ed_PYCH_CORE_WORK.text() or os.getcwd()
+        if path is None:    
+            current_dir = self.window.ed_PYCH_CORE_WORK.text() or os.getcwd()
+        else:
+            current_dir = path
+
         selected_dir = QFileDialog.getExistingDirectory(
             self.window,
             "Select Directory",

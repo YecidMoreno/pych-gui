@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>821</width>
+    <width>664</width>
     <height>766</height>
    </rect>
   </property>
@@ -27,6 +27,84 @@
     <property name="rightMargin">
      <number>20</number>
     </property>
+    <item row="0" column="0" colspan="2">
+     <widget class="QGroupBox" name="groupBox">
+      <property name="title">
+       <string>Project config</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <layout class="QGridLayout" name="gridLayout_4" rowstretch="0,0,0">
+         <property name="sizeConstraint">
+          <enum>QLayout::SetMinimumSize</enum>
+         </property>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_9">
+           <property name="text">
+            <string>PROJECT_PATH</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="ed_PYCH_CORE_WORK">
+           <property name="clearButtonEnabled">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="lbl_PYCH_CORE_WORK">
+           <property name="text">
+            <string>PYCH_CORE_WORK</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="lbl_PYCH_CORE_WORK_2">
+           <property name="text">
+            <string>CONFIG_FILE</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="2">
+          <widget class="QPushButton" name="btn_EXTERNAL_PLUGINS">
+           <property name="text">
+            <string>EXTERNAL_PLUGINS</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1" colspan="2">
+          <widget class="QComboBox" name="cb_CONFIG_FILES">
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" colspan="2">
+          <widget class="QLineEdit" name="ed_PROJECT_PATH">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="clearButtonEnabled">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QPushButton" name="btn_apply">
+      <property name="text">
+       <string>Apply</string>
+      </property>
+     </widget>
+    </item>
     <item row="2" column="1">
      <widget class="QGroupBox" name="groupBox_3">
       <property name="sizePolicy">
@@ -115,10 +193,10 @@
       </layout>
      </widget>
     </item>
-    <item row="3" column="1">
-     <widget class="QPushButton" name="btn_apply">
-      <property name="text">
-       <string>Apply</string>
+    <item row="5" column="0" colspan="2">
+     <widget class="QTextEdit" name="txt_log">
+      <property name="readOnly">
+       <bool>true</bool>
       </property>
      </widget>
     </item>
@@ -257,87 +335,35 @@
       </layout>
      </widget>
     </item>
-    <item row="0" column="0" colspan="2">
-     <widget class="QGroupBox" name="groupBox">
-      <property name="title">
-       <string>Project config</string>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_5">
-       <item>
-        <layout class="QGridLayout" name="gridLayout_4" rowstretch="0,0,0">
-         <property name="sizeConstraint">
-          <enum>QLayout::SetMinimumSize</enum>
-         </property>
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_9">
-           <property name="text">
-            <string>PROJECT_PATH</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="lbl_PYCH_CORE_WORK_2">
-           <property name="text">
-            <string>CONFIG_FILE</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="lbl_PYCH_CORE_WORK">
-           <property name="text">
-            <string>PYCH_CORE_WORK</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLineEdit" name="ed_CONFIG_FILE"/>
-         </item>
-         <item row="0" column="1">
-          <widget class="QLineEdit" name="ed_PROJECT_PATH">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="clearButtonEnabled">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QLineEdit" name="ed_PYCH_CORE_WORK"/>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-    </item>
     <item row="4" column="0" colspan="2">
-     <widget class="QTextEdit" name="txt_log">
-      <property name="readOnly">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0" colspan="2">
      <widget class="QGroupBox" name="groupBox_4">
       <property name="title">
        <string>Remote (Run)</string>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
-        <layout class="QGridLayout" name="gridLayout_3">
-         <item row="0" column="1">
-          <widget class="QLineEdit" name="ed_MODEL_NAME">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>0</height>
-            </size>
+        <layout class="QGridLayout" name="gridLayout_3" rowstretch="0,0" rowminimumheight="0,0">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>MODEL_NAME</string>
            </property>
-           <property name="clearButtonEnabled">
-            <bool>false</bool>
+          </widget>
+         </item>
+         <item row="0" column="3">
+          <widget class="QPushButton" name="btn_start">
+           <property name="text">
+            <string>Start</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="cb_MODEL_NAME"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>PYCH_BIN</string>
            </property>
           </widget>
          </item>
@@ -351,27 +377,6 @@
            </property>
            <property name="clearButtonEnabled">
             <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_8">
-           <property name="text">
-            <string>MODEL</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_7">
-           <property name="text">
-            <string>PYCH_BIN</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="3">
-          <widget class="QPushButton" name="btn_start">
-           <property name="text">
-            <string>Start</string>
            </property>
           </widget>
          </item>
@@ -412,11 +417,68 @@
    <zorder>txt_log</zorder>
    <zorder>btn_apply</zorder>
    <zorder>groupBox_3</zorder>
-   <zorder>groupBox_4</zorder>
    <zorder>groupBox</zorder>
    <zorder>groupBox_2</zorder>
+   <zorder>groupBox_4</zorder>
   </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>664</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>Project</string>
+    </property>
+    <addaction name="actionOpen_Project"/>
+    <addaction name="actionSave_Project"/>
+   </widget>
+   <addaction name="menuFile"/>
+  </widget>
+  <action name="actionOpen_Project">
+   <property name="text">
+    <string>Open project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionSave_Project">
+   <property name="text">
+    <string>Save</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
  </widget>
+ <tabstops>
+  <tabstop>ed_PROJECT_PATH</tabstop>
+  <tabstop>cb_CONFIG_FILES</tabstop>
+  <tabstop>ed_PYCH_CORE_WORK</tabstop>
+  <tabstop>btn_EXTERNAL_PLUGINS</tabstop>
+  <tabstop>ed_REMOTE_USER</tabstop>
+  <tabstop>ed_REMOTE_ADDR</tabstop>
+  <tabstop>btn_ping</tabstop>
+  <tabstop>ed_REMOTE_LOCAL</tabstop>
+  <tabstop>btn_mount</tabstop>
+  <tabstop>ed_REMOTE_SSH_KEY</tabstop>
+  <tabstop>ed_REMOTE_ARCH</tabstop>
+  <tabstop>ed_REMOTE_WORK</tabstop>
+  <tabstop>btn_remote_build</tabstop>
+  <tabstop>btn_remote_build_plugins</tabstop>
+  <tabstop>btn_remote_update_files</tabstop>
+  <tabstop>btn_apply</tabstop>
+  <tabstop>cb_MODEL_NAME</tabstop>
+  <tabstop>ed_REMOTE_PYCH_BIN</tabstop>
+  <tabstop>btn_start</tabstop>
+  <tabstop>btn_stop</tabstop>
+  <tabstop>txt_log</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

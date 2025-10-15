@@ -10,3 +10,4 @@ ENV/
 env.bak/
 venv.bak/
 .vscode/
+prepare_to_export.sh
