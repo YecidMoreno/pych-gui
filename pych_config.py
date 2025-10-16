@@ -325,9 +325,13 @@ class UIConfigWindow:
             pass
 
             program = "bash"
+            # arguments = [
+            #     "-c",
+            #     f"source {self.pjr.get_activate_sh_path()} && cd {p} && ./build.sh {self.J.get('REMOTE_ARCH','aarch64-unknown-linux-gnu')}"
+            # ]
             arguments = [
                 "-c",
-                f"source {self.pjr.get_activate_sh_path()} && cd {p} && ./build.sh {self.J.get('REMOTE_ARCH','aarch64-unknown-linux-gnu')}"
+                f"source {self.pjr.get_activate_sh_path()} && cd  {self.J.get('PYCH_CORE_WORK', '')} && ./scripts/build.sh {p} {self.J.get('REMOTE_ARCH','aarch64-unknown-linux-gnu')}"
             ]
             print("Executing:", program, " ".join(arguments))
             self.log(f"Remote build plugins started. {p}")
