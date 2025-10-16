@@ -313,7 +313,7 @@ class UIConfigWindow:
         if getattr(self.window, "led_remote_build_plugins", None) is not None:
             self.window.led_remote_build_plugins.setStyleSheet("color: orange;")
 
-        if self.J.get("EXTERNAL_PLUGIN_PATH", [])==[]:
+        if self.pjr.get("EXTERNAL_PLUGIN_PATH", [])==[]:
             self.log("No EXTERNAL_PLUGIN_PATH defined in config/activate.json")
             if getattr(self.window, "led_remote_build_plugins", None) is not None:
                 self.window.led_remote_build_plugins.setStyleSheet("color: red;")
@@ -321,7 +321,7 @@ class UIConfigWindow:
         
 
         self.plugins_build_process = []
-        for p in self.J["EXTERNAL_PLUGIN_PATH"]:
+        for p in self.pjr.get("EXTERNAL_PLUGIN_PATH", []):
             pass
 
             program = "bash"
@@ -441,11 +441,17 @@ class UIConfigWindow:
             self.remote_umount()
             return
 
-        program = "sshfs"
+        # program = "sshfs"
+        # arguments = [
+        #     "-o","ConnectTimeout=5",
+        #     f"{self.J.get('REMOTE_USER', 'pi')}@{self.J.get('REMOTE_ADDR', 'raspberrypi.local')}:{self.J.get('REMOTE_WORK', '/home/pi/core')}",
+        #     self.J.get('REMOTE_LOCAL', './remote')
+        # ]
+
+        program = "bash"
         arguments = [
-            "-o","ConnectTimeout=5",
-            f"{self.J.get('REMOTE_USER', 'pi')}@{self.J.get('REMOTE_ADDR', 'raspberrypi.local')}:{self.J.get('REMOTE_WORK', '/home/pi/core')}",
-            self.J.get('REMOTE_LOCAL', './remote')
+            "-c",
+            f"source {self.pjr.get_activate_sh_path()} && cd  {self.J.get('PYCH_CORE_WORK', '')} && ./scripts/remote.sh mount"
         ]
 
         print("Executing:", program, " ".join(arguments))

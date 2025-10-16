@@ -46,7 +46,8 @@ class UIPathEditor:
             self.window.setCentralWidget(None)
             dialog.setWindowTitle(self.window.windowTitle())
             dialog.setModal(True)
-            return self.paths, dialog.exec()
+            res = dialog.exec()
+            return self.paths, res
         else:
             # For QDialog or other widgets supporting exec
             return self.paths, self.window.exec()
